@@ -1,0 +1,35 @@
+[project]
+name = "procureflow"
+version = "0.1.0"
+description = "ProcureFlow modern Flask starter"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "Flask>=3.1,<3.2",
+  "Flask-SQLAlchemy>=3.1,<4",
+  "SQLAlchemy>=2.0,<2.1",
+  "Flask-Migrate>=4,<5",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic>=2,<3",
+  "python-dotenv>=1,<2",
+  "pymysql[rsa]>=1.1,<2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-cov>=6,<8", "ruff>=0.11,<1"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/procureflow"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
