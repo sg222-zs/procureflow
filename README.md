@@ -1,111 +1,146 @@
-# ProcureFlow Starter
+# ProcureFlow
 
-现代采购协同平台：完整 Vue 3 前端演示 + 最小 Flask 3.1 后端。
+> 轻量、现代的企业级采购协同与供应链管理系统，采用前后端分离架构（Vue 3 + Flask）。
 
-这是独立的 ProcureFlow 项目，位于 `D:\flask-project\procureflow`。**当前业务全部使用浏览器内存 Mock，后端只提供健康检查与基础工程骨架**，后续逐个领域替换为真实 Flask API。前后端、依赖、启动脚本和 CI 均在本项目内，不依赖相邻的 Bibi 项目。
+---
 
-## 快速启动
+## 🌟 项目亮点
 
-需要 Node.js 24、pnpm 11、uv。uv 会按项目要求安装 Python 3.13。
+- **全流程业务闭环**：涵盖供应商管理、商品与 SKU 维护、采购申请、多级审批、采购订单生成及入库管理。
+- **现代化技术栈**：
+  - 前端基于 Vue 3 + TypeScript + Vite + Element Plus，组件设计清晰，交互流畅。
+  - 后端基于 Flask 3.1 + SQLAlchemy 2.0 + Pydantic，具备强类型参数校验与规范的统一 RESTful 响应规范。
+- **开箱即用体验**：前端内置灵活的数据模式（支持独立 Mock 演示与直连真实后端无缝切换）。
 
-前端可独立运行，无需数据库或 Flask：
+---
 
-```powershell
+## 🛠️ 技术栈
+
+| 领域 | 核心技术 |
+| --- | --- |
+| **前端** | Vue 3 · TypeScript · Vite · Element Plus · Pinia · Vue Router |
+| **后端** | Python 3.12+ · Flask 3.1 · SQLAlchemy 2.0 · Flask-Migrate · Pydantic 2 |
+| **数据库** | MySQL 8.0+ / PostgreSQL |
+
+---
+
+## 🚀 快速启动
+
+### 1. 环境准备
+确保本机已安装：
+- **Node.js** (>= 20.0) 及 **pnpm**
+- **Python** (>= 3.12) 及 **pip**
+- **MySQL**（若仅体验前端 Mock 模式可不启动数据库）
+
+---
+
+### 2. 启动后端 (Flask)
+
+```bash
+cd backend
+
+# 1. 创建并激活虚拟环境
+python -m venv .venv
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# macOS / Linux:
+# source .venv/bin/activate
+
+# 2. 安装依赖
+pip install -r requirements.txt
+
+# 3. 配置环境变量（根据实际情况修改数据库连接）
+cp .env.example .env
+
+# 4. 启动后端服务
+flask --app procureflow:create_app run --debug
+```
+> 后端服务运行于 `http://127.0.0.1:5000`  
+> 健康检查接口：`http://127.0.0.1:5000/api/v1/health`
+
+---
+
+### 3. 启动前端 (Vue 3)
+
+另开终端窗口：
+
+```bash
 cd frontend
-pnpm install --frozen-lockfile
+
+# 1. 安装依赖
+pnpm install
+
+# 2. 启动开发服务器
 pnpm dev
 ```
+> 前端访问地址：`http://127.0.0.1:5173`
 
-打开 http://127.0.0.1:5173 。演示密码统一为 `demo123`：
+---
 
-| 账号 | 角色 | 能力 |
+## 🔑 演示账号
+
+系统内置了不同角色的演示账号（默认密码统一为 `demo123`）：
+
+| 账号 | 角色 | 核心权限 |
 | --- | --- | --- |
-| admin | 系统管理员 | 全部页面与操作 |
-| buyer | 采购专员 | 供应商、商品、SKU、自己的采购申请 |
-| approver | 审批经理 | 待办审批、订单与库存查看 |
-| warehouse | 仓库管理员 | 分批入库、订单、库存、流水 |
+| **admin** | 系统管理员 | 拥有系统全量功能与配置权限 |
+| **buyer** | 采购专员 | 供应商、商品目录、新建及跟踪个人采购申请 |
+| **approver** | 审批经理 | 采购审批中心、订单与库存查阅 |
+| **warehouse** | 仓库管理员 | 订单收货、分批入库、库存查看与出入库流水 |
 
-数据在当前浏览器页面内存保留，**硬刷新恢复初始数据**。使用退出登录切换角色可以继续当前演示流程。用户和角色管理提供只读查看；无真实认证。
+---
 
-另开终端启动后端（健康检查无需连接数据库）：
-
-```powershell
-cd backend
-uv sync --frozen
-Copy-Item .env.example .env
-uv run flask --app procureflow:create_app run --debug
-```
-
-访问 http://127.0.0.1:5000/api/v1/health ，或点击前端右上角连接图标。
-
-后端只使用一份默认配置：`backend/.env`。复制 `.env.example` 后填写 MySQL 用户名、密码和数据库名即可；`create_app()` 不需要传入环境名称。`--debug` 用来在保存 Python 文件后自动重新加载。
-
-仓库根目录也提供 `scripts/dev-frontend.ps1` 和 `scripts/dev-backend.ps1` 启动脚本。
-
-前端依赖安装完成后，`scripts/dev-frontend.ps1` 直接使用 Node.js 启动本地 Vite，不要求终端能找到全局 pnpm。若首次安装时提示找不到 pnpm，可在 `frontend` 目录执行 `corepack pnpm install --frozen-lockfile`。前端脚本固定使用 5173 端口；端口占用时会明确报错，请先停止旧的前端服务。
-
-## 业务演示
-
-采购申请 → 添加 SKU 明细 → 保存草稿 → 更多操作 / 提交审批 → 审批中心批准 → 自动按供应商生成订单 → 入库管理分批收货 → 查看订单进度、库存流水和操作日志。
-
-支持驳回原因、审批轨迹、撤回、草稿取消、驳回后修订、供应商引用保护、商品/SKU 启停和超量入库拦截。所有金额通过整数分计算。
-
-工作台提供实时 Mock 指标、七天采购趋势、待办、库存预警与最近订单。列表统一支持查询、分页、URL 筛选、加载/空/错误状态，新增和详情使用抽屉。
-
-## 开发检查
-
-```powershell
-# frontend
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm format:check
-
-# backend
-uv run ruff check .
-uv run ruff format --check .
-uv run pytest
-```
-
-GitHub Actions 配置会执行前端类型检查、测试、构建与后端 Ruff/pytest。CI 文件已加入仓库，尚未在远程运行。
-
-## 数据源切换
-
-前端默认 `.env.development` / `.env.production` 都为 `VITE_API_MODE=mock`，确保开发和构建预览均可演示。创建 `.env.development.local` 设置：
-
-```dotenv
-VITE_API_MODE=server
-VITE_API_BASE_URL=/api/v1
-```
-
-重启 Vite 后所有业务请求走真实 Flask；目前除 `/health` 外会返回结构化 404，这符合 Starter 边界。连接检查按钮始终访问真实后端。Vite 开发和预览均把 `/api` 代理至 `127.0.0.1:5000`。静态产物部署时需由宿主配置 SPA fallback 和 API 同源转发。
-
-页面只依赖 `src/api/`，不能直接导入 Mock 或调用 Axios。业务请求模拟 300–700ms 延迟；右上角调试菜单可模拟下一次 400/401/403/409/500 错误。
-
-## 工程结构
+## 📁 目录结构
 
 ```text
-frontend/src/
-  api/          统一 Axios、错误、业务 API
-  mock/         fixtures、内存数据库、状态机与测试
-  types/        统一类型与分页响应
-  views/        工作台、业务列表、登录
-  components/   表单、详情、权限、状态、图表
-  layouts/      裁剪后的 pure-admin 菜单与工作台布局
-  router/       菜单、路由、权限守卫
-  stores/       Pinia 会话
-  utils/        金额、状态显示
-backend/
-  src/procureflow/  工厂、配置、扩展、错误、健康 API
-  migrations/      已初始化的 Alembic 框架，无业务迁移
-  tests/           health、错误契约、工厂测试
-  pyproject.toml
-  uv.lock
+procureflow/
+├── frontend/                  # 前端工程 (Vue 3 + Vite)
+│   ├── src/
+│   │   ├── api/               # 统一接口请求层 (Axios 封装)
+│   │   ├── components/        # 公共业务与基础组件
+│   │   ├── mock/              # 离线演示 Mock 数据库与处理器
+│   │   ├── router/            # 路由与权限守卫
+│   │   ├── stores/            # Pinia 状态管理 (会话/权限)
+│   │   └── views/             # 页面视图 (工作台、资源管理等)
+│   └── package.json
+│
+├── backend/                   # 后端工程 (Flask)
+│   ├── src/procureflow/
+│   │   ├── api/               # 基础 API (健康检查等)
+│   │   ├── suppliers/         # 供应商模块 (路由、模型、业务逻辑)
+│   │   ├── config.py          # 基础配置与环境变量加载
+│   │   └── extensions.py      # SQLAlchemy、Migrate 扩展初始化
+│   ├── tests/                 # 后端单元测试
+│   ├── requirements.txt       # Python 依赖清单
+│   └── pyproject.toml
+│
+├── scripts/                   # 一键启动便捷脚本
+│   ├── dev-backend.ps1
+│   └── dev-frontend.ps1
+└── README.md
 ```
 
-- [改造范围与演示说明](docs/MODERNIZATION.md)
-- [API 契约](docs/API.md)
-- [pure-admin 来源和 MIT 说明](frontend/THIRD_PARTY_NOTICES.md)
-- [旧 Bibi 中文文档](docs/BIBI_LEGACY_ZH.md) / [英文文档](docs/BIBI_LEGACY_EN.md)
+---
 
-旧 Bibi 项目独立保留在 `D:\flask-project\bibi`，未迁入本项目；docs 中只保留其历史文档作为参考。保留原 Apache-2.0 LICENSE；引用的 pure-admin 组件另附 MIT 许可证。
+## 🧪 代码质量与测试
+
+**前端质量检查**：
+```bash
+cd frontend
+pnpm typecheck       # TypeScript 类型检查
+pnpm test            # 单元测试 (Vitest)
+pnpm build           # 生产构建打包
+```
+
+**后端质量检查**：
+```bash
+cd backend
+ruff check .         # 代码规范检查
+pytest               # 单元测试
+```
+
+---
+
+## 📄 开源许可
+
+本项目遵循 [Apache-2.0 License](LICENSE)。
