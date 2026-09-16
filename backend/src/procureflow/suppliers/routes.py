@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 from pydantic import ValidationError
-
+from ..employees.auth import login_required
 from ..exceptions import ApiError
 from ..response import response
 from .schemas import SupplierCreate, SupplierQuery, SupplierUpdate
@@ -15,7 +15,7 @@ bp = Blueprint("suppliers", __name__)  # 让每个模块管理自己的路由、
 
 
 def read_body(schema):
-    payload = request.get_json()
+    payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         raise ApiError("请求体必须是JSON对象", 422)
     try:
@@ -50,6 +50,7 @@ def read_query(schema):
 
 
 @bp.get("/suppliers")
+@login_required()
 def index():
     # 借助统一的校验解析器（类似你的 read_body，但解析 request.args）
     query = read_query(SupplierQuery)
@@ -62,17 +63,20 @@ def index():
 
 
 @bp.post("/suppliers")
+@login_required("admin", "buyer")
 def create():
     body = read_body(SupplierCreate)
     return response(create_supplier(body.model_dump()), status=201)
 
 
 @bp.get("/suppliers/<int:supplier_id>")
+@login_required()
 def detail(supplier_id):
     return response(get_supplier(supplier_id).to_dict())
 
 
 @bp.put("/suppliers/<int:supplier_id>")
+@login_required("admin", "buyer")
 def update(supplier_id):
     body = read_body(SupplierUpdate)
     return response(
@@ -85,6 +89,7 @@ def update(supplier_id):
 
 
 @bp.patch("/suppliers/<int:supplier_id>/status")
+@login_required("admin", "buyer")
 def set_status(supplier_id):
     body = read_body(SupplierUpdate)
     values = body.model_dump(exclude_unset=True)

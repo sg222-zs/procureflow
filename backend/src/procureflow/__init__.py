@@ -12,7 +12,8 @@ from .config import get_config
 from .exceptions import register_error_handlers
 from .extensions import db, migrate
 from .suppliers.routes import bp as suppliers_bp
-
+from .employees.routes import bp as employees_bp
+from . employees.commands import register_commands
 
 def create_app() -> Flask:
     # 读取 .env；默认不覆盖终端中已经设置的环境变量。
@@ -44,6 +45,9 @@ def create_app() -> Flask:
     # 新增数据库模型后，也要确保工厂加载它们，迁移工具才能发现对应的表。
     app.register_blueprint(health_bp, url_prefix="/api/v1")
     app.register_blueprint(suppliers_bp, url_prefix="/api/v1")
+
+    app.register_blueprint(employees_bp,url_prefix="/api/v1")
+    register_commands(app)
     # 将业务异常、HTTP 异常和未预期异常统一转换成 API 响应。
     register_error_handlers(app)
     return app

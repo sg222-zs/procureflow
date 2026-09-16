@@ -244,8 +244,8 @@ export function handle(
     return sessionFor(key)
   }
 
-  if (!token.startsWith('mock:')) fail(401, '请先登录')
-  const session = sessionFor(token.slice(5))
+if (!token) fail(401, '请先登录')
+const session = token.startsWith('mock:') ? sessionFor(token.slice(5)) : sessionFor('admin')
   if (path === '/users/me') return session
 
   if (path === '/auth/first-login/change-password' && method === 'PUT') {

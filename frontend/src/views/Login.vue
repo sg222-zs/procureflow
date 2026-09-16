@@ -3,31 +3,31 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuth } from '../stores/auth'
-import { apiMode } from '../api/request'
 
 const auth = useAuth()
 const router = useRouter()
 const route = useRoute()
 
-const employeeNo = ref('00010001')
-const password = ref('demo123')
+const employeeNo = ref('')
+const password = ref('')
 const busy = ref(false)
 
-const demoAccounts = [
-  { id: '00010001', name: '管理员', role: '系统管理员', pass: 'demo123', tag: '全部权限' },
-  { id: '00010002', name: '林晓', role: '采购专员', pass: 'demo123', tag: '采购业务' },
-  { id: '00010003', name: '周宁', role: '审批经理', pass: 'demo123', tag: '审批中心' },
-  { id: '00010004', name: '许川', role: '仓库管理员', pass: 'demo123', tag: '多仓收货' },
-  { id: '00010331', name: '孙小萌', role: '待改密员工', pass: 'temp123', tag: '体验首次改密' },
+// 部门定义
+const departments = [
+  { id: 'management', name: '管理部', desc: '系统配置 · 审批决策' },
+  { id: 'procurement', name: '采购部', desc: '供应商 · 需求提报' },
+  { id: 'warehouse', name: '仓储部', desc: '订单入库 · 库存监控' },
+  { id: 'finance', name: '财务部', desc: '应付账款 · 审批中心' },
 ]
+
+const selectedDepartment = ref('采购部')
 
 function onInputEmployeeNo(val: string) {
   employeeNo.value = val.replace(/\D/g, '').slice(0, 8)
 }
 
-function selectAccount(acc: (typeof demoAccounts)[0]) {
-  employeeNo.value = acc.id
-  password.value = acc.pass
+function selectDept(deptName: string) {
+  selectedDepartment.value = deptName
 }
 
 async function submit() {
@@ -48,17 +48,19 @@ async function submit() {
   try {
     await auth.signIn(empNo, password.value)
     if (auth.session?.user.mustChangePassword) {
+      ElMessage.info('首次登录需修改初始密码')
       await router.push('/first-login/change-password')
       return
     }
+    ElMessage.success(`欢迎回来，${auth.session?.user.name}`)
     const redirect = String(route.query.redirect || '/dashboard')
     await router.push(
       redirect.startsWith('/') && !redirect.startsWith('//') && !redirect.startsWith('/login')
         ? redirect
         : '/dashboard',
     )
-  } catch {
-    /* error handled */
+  } catch (err: any) {
+    ElMessage.error(err?.message || '登录失败，请检查工号或密码')
   } finally {
     busy.value = false
   }
@@ -104,31 +106,24 @@ async function submit() {
       <div class="login-card">
         <div class="login-card-head">
           <h2>欢迎登录</h2>
-          <p class="muted">
-            {{
-              apiMode === 'mock'
-                ? '演示环境支持点击卡片一键填入不同岗位工号'
-                : '请使用企业分配的8位员工工号与密码登录'
-            }}
-          </p>
+          <p class="muted">请选择所属业务部门并输入工号密码</p>
         </div>
 
-        <div v-if="apiMode === 'mock'" class="demo-roles-selector">
-          <label class="role-selector-label">快捷体验工号卡片</label>
+        <div class="demo-roles-selector">
+          <label class="role-selector-label">选择所属部门</label>
           <div class="role-chips">
             <button
-              v-for="acc in demoAccounts"
-              :key="acc.id"
+              v-for="dept in departments"
+              :key="dept.id"
               type="button"
               class="role-chip"
-              :class="{ active: employeeNo === acc.id }"
-              @click="selectAccount(acc)"
+              :class="{ active: selectedDepartment === dept.name }"
+              @click="selectDept(dept.name)"
             >
               <div class="role-chip-head">
-                <strong>{{ acc.name }}</strong>
-                <span class="role-chip-tag">{{ acc.tag }}</span>
+                <strong>{{ dept.name }}</strong>
               </div>
-              <small>{{ acc.role }} · {{ acc.id }}</small>
+              <small>{{ dept.desc }}</small>
             </button>
           </div>
         </div>
@@ -139,7 +134,7 @@ async function submit() {
               :model-value="employeeNo"
               inputmode="numeric"
               maxlength="8"
-              placeholder="请输入8位员工工号 (如 00010001)"
+              placeholder="请输入8位员工工号 (如 00000001)"
               clearable
               @update:model-value="onInputEmployeeNo"
             />
@@ -148,7 +143,7 @@ async function submit() {
             <el-input
               v-model="password"
               type="password"
-              placeholder="请输入密码"
+              placeholder="请输入登录密码"
               show-password
               autocomplete="current-password"
             />
@@ -159,12 +154,7 @@ async function submit() {
         </el-form>
 
         <div class="login-card-foot">
-          <span class="contact-admin">无法登录？请联系系统管理员</span>
-        </div>
-
-        <div v-if="apiMode === 'mock'" class="login-tip">
-          <span class="tip-icon">ℹ️</span>
-          <span>正常账号默认密码 <code>demo123</code>，待改密专员密码 <code>temp123</code></span>
+          <span class="contact-admin">无法登录？请联系系统管理员解锁或重置密码</span>
         </div>
       </div>
     </section>
